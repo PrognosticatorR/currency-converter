@@ -1,5 +1,5 @@
 import ListItem from "./ListItem";
-import icon from "./icon";
+import icon from "./Icon";
 import Separator from "./Separator";
 import styles from "./styles";
 

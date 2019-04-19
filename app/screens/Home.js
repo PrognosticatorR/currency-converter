@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { StatusBar, KeyboardAvoidingView } from "react-native";
 import { connect } from "react-redux";
+
+import { connectAlert } from "../components/Alert";
 import { Container } from "../components/Container";
 import { Logo } from "../components/Logo";
 import { InputWithButton } from "../components/TextInput";
@@ -9,7 +11,11 @@ import { ClearButton } from "../components/Button";
 import { LastConverted } from "../components/Text";
 import { Header } from "../components/Headers";
 
-import { swapCurrency, changeCurrencyAmount } from "../actions/currencies";
+import {
+  swapCurrency,
+  changeCurrencyAmount,
+  getInitialConversion
+} from "../actions/currencies";
 
 class Home extends Component {
   static propTypes = {
@@ -21,8 +27,22 @@ class Home extends Component {
     conversionRate: PropTypes.number,
     isFetching: PropTypes.bool,
     lastConvertedDate: PropTypes.object,
-    primaryColor: PropTypes.string
+    primaryColor: PropTypes.string,
+    getInitialConversion: PropTypes.func,
+    alertWithType: PropTypes.func,
+    currencyError: PropTypes.string
   };
+  componentWillMount() {
+    this.props.dispatch(getInitialConversion());
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { currencyError, alertWithType } = this.props;
+    if (nextProps.currencyError && !currencyError) {
+      alertWithType("error", "Error", nextProps.currencyError);
+    }
+  }
+
   handlePressBaseCurrency = () => {
     this.props.navigation.navigate("CurrencyList", {
       title: "Base Currency",
@@ -102,8 +122,9 @@ const mapStateToProps = state => {
     lastConvertedDate: conversionSelector.date
       ? new Date(conversionSelector.date)
       : new Date(),
-    primaryColor: state.theme.primaryColor
+    primaryColor: state.theme.primaryColor,
+    currencyError: state.currencies.error
   };
 };
 
-export default connect(mapStateToProps)(Home);
+export default connect(mapStateToProps)(connectAlert(Home));
